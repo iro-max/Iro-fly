@@ -1,0 +1,40 @@
+local lp = game.Players.LocalPlayer
+local char = lp.Character
+local root = char.HumanoidRootPart
+local hum = char.Humanoid
+local flying = false
+local bv, bg
+local rs = game:GetService("RunService")
+
+-- GUI Button
+local gui = Instance.new("ScreenGui", lp.PlayerGui)
+local btn = Instance.new("TextButton", gui)
+btn.Size = UDim2.new(0, 100, 0, 50)
+btn.Position = UDim2.new(0, 10, 0.5, 0)
+btn.Text = "Fly: OFF"
+btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+btn.MouseButton1Click:Connect(function()
+    flying = not flying
+    hum.PlatformStand = flying
+    if flying then
+        bv = Instance.new("BodyVelocity", root)
+        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bg = Instance.new("BodyGyro", root)
+        bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+        btn.Text = "Fly: ON"
+        btn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    else
+        bv:Destroy() bg:Destroy()
+        btn.Text = "Fly: OFF"
+        btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
+
+rs.Heartbeat:Connect(function()
+    if not flying then return end
+    local cam = workspace.CurrentCamera
+    local d = cam.CFrame.LookVector
+    bv.Velocity = d * 60
+    bg.CFrame = cam.CFrame
+end)
