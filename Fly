@@ -1,0 +1,35 @@
+local lp = game.Players.LocalPlayer
+local char = lp.Character
+local root = char.HumanoidRootPart
+local hum = char.Humanoid
+local flying = false
+local bv, bg
+local uis = game:GetService("UserInputService")
+local rs = game:GetService("RunService")
+
+uis.InputBegan:Connect(function(i)
+    if i.KeyCode == Enum.KeyCode.F then
+        flying = not flying
+        hum.PlatformStand = flying
+        if flying then
+            bv = Instance.new("BodyVelocity", root)
+            bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+            bg = Instance.new("BodyGyro", root)
+            bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+        else
+            bv:Destroy() bg:Destroy()
+        end
+    end
+end)
+
+rs.Heartbeat:Connect(function()
+    if not flying then return end
+    local cam = workspace.CurrentCamera
+    local d = Vector3.zero
+    if uis:IsKeyDown(Enum.KeyCode.W) then d += cam.CFrame.LookVector end
+    if uis:IsKeyDown(Enum.KeyCode.S) then d -= cam.CFrame.LookVector end
+    if uis:IsKeyDown(Enum.KeyCode.Space) then d += Vector3.new(0,1,0) end
+    if uis:IsKeyDown(Enum.KeyCode.LeftShift) then d -= Vector3.new(0,1,0) end
+    bv.Velocity = (d.Magnitude > 0 and d.Unit or d) * 60
+    bg.CFrame = cam.CFrame
+end)
