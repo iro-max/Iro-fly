@@ -1,0 +1,54 @@
+-- Silent Aimbot Script for Delta Executor
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local UIS = game:GetService("UserInputService")
+
+local aimbotEnabled = true
+local fov = 200 -- Field of view radius
+
+local function getClosestPlayer()
+    local closest = nil
+    local shortestDist = fov
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+            local hum = player.Character:FindFirstChild("Humanoid")
+            if hrp and hum and hum.Health > 0 then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                if onScreen then
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - 
+                        Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)).Magnitude
+                    if dist < shortestDist then
+                        shortestDist = dist
+                        closest = player
+                    end
+                end
+            end
+        end
+    end
+    return closest
+end
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if aimbotEnabled then
+        local target = getClosestPlayer()
+        if target and target.Character then
+            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, hrp.Position)
+            end
+        end
+    end
+end)
+
+-- Toggle aimbot with Q key
+UIS.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.Q then
+        aimbotEnabled = not aimbotEnabled
+        print("Aimbot: " .. (aimbotEnabled and "ON" or "OFF"))
+    end
+end)
+
+print("Aimbot Loaded! Press Q to toggle.")
